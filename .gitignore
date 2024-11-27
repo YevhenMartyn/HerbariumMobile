@@ -128,3 +128,22 @@ docs/pages/versions/*/react-native/*.diff
 
 # iOS
 **/ios/.xcode.env.local
+
+# OSX
+#
+.DS_Store
+
+# Android/IntelliJ
+#
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+
+# Bundle artifacts
+*.jsbundle
+
+android/
