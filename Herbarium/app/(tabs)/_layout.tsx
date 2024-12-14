@@ -17,6 +17,18 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="galeryScreen"
+        options={{
+          headerTitle: "Galery",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name={focused ? "image-sharp" : "image-outline"}
+              size={30}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="cameraScreen"
         options={{
           headerTitle: "CameraScreen",

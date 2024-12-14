@@ -147,3 +147,4 @@ local.properties
 *.jsbundle
 
 android/
+Herbarium/FirebaseConfig.ts
