@@ -1,117 +1,125 @@
+import React from "react";
 import {
+  View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import React, { useState } from "react";
-import { auth } from "../FirebaseConfig";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 
 const index = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const signIn = async () => {
-    try {
-      const user = await signInWithEmailAndPassword(auth, email, password);
-      if (user) router.replace("/(tabs)");
-    } catch (error: any) {
-      console.log(error);
-      alert("Sign in failed: " + error.message);
-    }
+  const navigateToSignIn = () => {
+    router.push("/sign-in");
   };
 
-  const signUp = async () => {
-    try {
-      const user = await createUserWithEmailAndPassword(auth, email, password);
-      if (user) router.replace("/(tabs)");
-    } catch (error: any) {
-      console.log(error);
-      alert("Sign in failed: " + error.message);
-    }
+  const navigateToRegister = () => {
+    router.push("/register");
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.textInput}
-        placeholder="email"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder="password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={signIn}>
-        <Text style={styles.text}>Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={signUp}>
-        <Text style={styles.text}>Make Account</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+    <LinearGradient
+      colors={["#FFFFFF", "#EAFFCD"]}
+      style={styles.container}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+    >
+      <SafeAreaView style={styles.innerContainer}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleCollect}>Collect</Text>
+          <Text style={styles.titleAmpersand}>&</Text>
+          <Text style={styles.titleScan}>Scan plants</Text>
+        </View>
+
+        <View style={styles.formContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.signInButton]}
+            onPress={navigateToSignIn}
+          >
+            <Text style={styles.signInButtonText}>Sign in</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.registerButton]}
+            onPress={navigateToRegister}
+          >
+            <Text style={styles.registerButtonText}>Register</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
-
-export default index;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  innerContainer: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    paddingHorizontal: 24,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 40,
-    color: "#1A237E",
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 60,
   },
-  textInput: {
-    height: 50,
-    width: "90%",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E8EAF6",
-    borderWidth: 2,
-    borderRadius: 15,
-    marginVertical: 15,
-    paddingHorizontal: 25,
-    fontSize: 16,
-    color: "#3C4858",
-    shadowColor: "#9E9E9E",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+  titleCollect: {
+    fontFamily: "Parkinsans-Bold",
+    fontWeight: "bold",
+    fontSize: 48,
+    color: "#304121",
+  },
+  titleAmpersand: {
+    fontFamily: "Parkinsans-Bold",
+    fontWeight: "bold",
+    fontSize: 48,
+    color: "#98B66E",
+    marginVertical: -10,
+  },
+  titleScan: {
+    fontFamily: "Parkinsans-Bold",
+    fontWeight: "bold",
+    fontSize: 48,
+    color: "#304121",
+  },
+  formContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   button: {
-    width: "90%",
-    marginVertical: 15,
-    backgroundColor: "#5C6BC0",
-    padding: 20,
-    borderRadius: 15,
-    alignItems: "center",
+    width: 341,
+    height: 57,
+    borderRadius: 60,
     justifyContent: "center",
-    shadowColor: "#5C6BC0",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
+    alignItems: "center",
+    marginVertical: 10,
+    shadowColor: "#304121",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 21,
     elevation: 5,
   },
-  text: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "600",
+  signInButton: {
+    backgroundColor: "#98B66E",
+  },
+  signInButtonText: {
+    fontFamily: "NunitoSans_10pt_Expanded-Regular",
+    fontWeight: "bold",
+    color: "white",
+    fontSize: 24,
+  },
+  registerButton: {
+    backgroundColor: "#304121",
+  },
+  registerButtonText: {
+    fontFamily: "NunitoSans_10pt_Expanded-Regular",
+    fontWeight: "bold",
+    color: "#98B66E",
+    fontSize: 24,
   },
 });
+
+export default index;
