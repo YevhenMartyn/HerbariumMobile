@@ -33,6 +33,7 @@ export default function GaleryScreen() {
       }
     }, [user])
   );
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -66,9 +67,7 @@ export default function GaleryScreen() {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
-      console.log(result, "the result");
       setImage(imageUri);
-      console.log("Image picked: ", imageUri);
     }
   };
 
@@ -88,7 +87,6 @@ export default function GaleryScreen() {
       const url = await getDownloadURL(storageRef);
       setImages((images) => [...images, url]);
       setImage(null); // Reset the image state
-      console.log("Image uploaded and URL retrieved: ", url);
     } catch (error: any) {
       console.error("Error uploading image: ", error);
       Alert.alert("Upload failed!", error.message);
@@ -114,14 +112,14 @@ export default function GaleryScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.title}>Storage</Text>
+        <Text style={styles.title}>Gallery</Text>
         <TouchableOpacity style={styles.button} onPress={pickImage}>
           <Text style={styles.buttonText}>Pick an image from camera roll</Text>
         </TouchableOpacity>
         {image && (
           <>
             <Image source={{ uri: image }} style={styles.image} />
-            <TouchableOpacity style={styles.button} onPress={uploadImage}>
+            <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
               <Text style={styles.buttonText}>Upload Image</Text>
             </TouchableOpacity>
           </>
@@ -132,7 +130,7 @@ export default function GaleryScreen() {
             <View style={styles.imageContainer}>
               <Image source={{ uri: item }} style={styles.image} />
               <TouchableOpacity
-                style={styles.button}
+                style={styles.deleteButton}
                 onPress={() => deleteImage(item)}
               >
                 <Text style={styles.buttonText}>Delete</Text>
@@ -155,33 +153,66 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#EAFFCD",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "#304121",
   },
   image: {
     width: 200,
     height: 200,
     marginVertical: 10,
+    borderRadius: 10,
   },
   imageContainer: {
     alignItems: "center",
-    marginVertical: 10,
+    marginVertical: 15,
+    width: "100%",
   },
   button: {
-    padding: 10,
-    borderRadius: 15,
+    padding: 12,
+    borderRadius: 60,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#5C6BC0",
+    backgroundColor: "#98B66E",
     shadowColor: "#5C6BC0",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
     elevation: 5,
-    marginLeft: 10,
+    marginBottom: 10,
+    width: "80%",
+  },
+  uploadButton: {
+    backgroundColor: "#304121",
+    borderRadius: 60,
+    width: "80%",
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#304121",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 21,
+    elevation: 5,
+    marginVertical: 20,
+  },
+  deleteButton: {
+    backgroundColor: "#FF3B30",
+    borderRadius: 15,
+    width: "80%",
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#FF3B30",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    marginTop: 10,
   },
   buttonText: {
     color: "#FFFFFF",

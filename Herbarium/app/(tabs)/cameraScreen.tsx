@@ -1,17 +1,10 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useState, useRef } from "react";
-import {
-  Button,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  Alert,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View, Image, Alert } from "react-native";
 import { storage, auth } from "../../FirebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
 
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -88,10 +81,10 @@ export default function CameraScreen() {
         <Image source={{ uri: photoUri }} style={styles.preview} />
         <View style={styles.bottomPanel}>
           <TouchableOpacity style={styles.button} onPress={retakePhoto}>
-            <Text style={styles.text}>Retake</Text>
+            <Ionicons name="reload-circle" size={30} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={savePhoto}>
-            <Text style={styles.text}>Save</Text>
+            <Ionicons name="cloud-upload" size={30} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -103,10 +96,10 @@ export default function CameraScreen() {
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
         <View style={styles.bottomPanel}>
           <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
+            <Ionicons name="camera-reverse" size={30} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={takePhoto}>
-            <Text style={styles.text}>Take Photo</Text>
+            <Ionicons name="camera" size={30} color="white" />
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -121,11 +114,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "black",
   },
-  message: {
-    textAlign: "center",
-    paddingBottom: 10,
-    color: "white",
-  },
   camera: {
     flex: 1,
   },
@@ -133,26 +121,32 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     resizeMode: "contain",
+    borderRadius: 10,
+    marginBottom: 20,
   },
   bottomPanel: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    padding: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 15,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
     position: "absolute",
     bottom: 0,
     width: "100%",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   button: {
-    padding: 10,
-    backgroundColor: "#5C6BC0",
-    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    backgroundColor: "#000000",
+    borderRadius: 15,
     minWidth: 100,
     alignItems: "center",
-  },
-  text: {
-    color: "white",
-    fontSize: 16,
+    justifyContent: "center",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
