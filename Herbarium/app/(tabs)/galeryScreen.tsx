@@ -138,6 +138,8 @@ export default function GaleryScreen() {
             </View>
           )}
           keyExtractor={(item, index) => index.toString()}
+          numColumns={2} // Display images in two columns
+          columnWrapperStyle={styles.columnWrapper} // Optional: Style to add space between columns
         />
       </View>
     </SafeAreaView>
@@ -162,15 +164,19 @@ const styles = StyleSheet.create({
     color: "#304121",
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     marginVertical: 10,
     borderRadius: 10,
   },
   imageContainer: {
     alignItems: "center",
-    marginVertical: 15,
-    width: "100%",
+    marginVertical: 10,
+    width: "50%", // Ensures two columns by giving each image half the width of the container
+  },
+  columnWrapper: {
+    justifyContent: "space-between", // Space out the columns
+    marginHorizontal: 5,
   },
   button: {
     padding: 12,

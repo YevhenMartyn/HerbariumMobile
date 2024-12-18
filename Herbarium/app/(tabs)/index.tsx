@@ -23,7 +23,7 @@ export default function HomePage() {
 
   const handleSignOut = () => {
     auth.signOut();
-    router.replace("../index.tsx");
+    router.replace("../sign-in.tsx");
   };
 
   React.useEffect(() => {
