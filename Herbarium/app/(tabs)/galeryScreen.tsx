@@ -7,9 +7,11 @@ import {
   SafeAreaView,
   Text,
   View,
+  TextInput,
+  Modal,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
-import { storage, auth } from "../../FirebaseConfig";
+import { storage, auth, firestore } from "../../FirebaseConfig";
 import {
   getDownloadURL,
   ref,
@@ -17,6 +19,14 @@ import {
   listAll,
   deleteObject,
 } from "firebase/storage";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  deleteDoc,
+} from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { useFocusEffect } from "expo-router";
@@ -25,6 +35,8 @@ export default function GaleryScreen() {
   const [image, setImage] = useState<any>(null);
   const [images, setImages] = useState<any[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [description, setDescription] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,7 +61,19 @@ export default function GaleryScreen() {
       const storageRef = ref(storage, `images/${userId}`);
       const result = await listAll(storageRef);
       const urls = await Promise.all(
-        result.items.map((itemRef) => getDownloadURL(itemRef))
+        result.items.map(async (itemRef) => {
+          const url = await getDownloadURL(itemRef);
+          const q = query(
+            collection(firestore, "images"),
+            where("url", "==", url)
+          );
+          const querySnapshot = await getDocs(q);
+          let description = "";
+          querySnapshot.forEach((doc) => {
+            description = doc.data().description;
+          });
+          return { url, description };
+        })
       );
       setImages(urls);
     } catch (error) {
@@ -68,10 +92,11 @@ export default function GaleryScreen() {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
       setImage(imageUri);
+      setModalVisible(true);
     }
   };
 
-  const uploadImage = async () => {
+  const uploadImage = async (withDescription: boolean) => {
     if (!user || !image) {
       Alert.alert("No user or image found!");
       return;
@@ -85,8 +110,19 @@ export default function GaleryScreen() {
       await uploadBytes(storageRef, blob);
 
       const url = await getDownloadURL(storageRef);
-      setImages((images) => [...images, url]);
+      await addDoc(collection(firestore, "images"), {
+        url,
+        description: withDescription ? description : "",
+        userId: user.uid,
+      });
+
+      setImages((images) => [
+        ...images,
+        { url, description: withDescription ? description : "" },
+      ]);
       setImage(null); // Reset the image state
+      setDescription(""); // Reset the description state
+      setModalVisible(false); // Close the modal
     } catch (error: any) {
       console.error("Error uploading image: ", error);
       Alert.alert("Upload failed!", error.message);
@@ -102,7 +138,14 @@ export default function GaleryScreen() {
     try {
       const storageRef = ref(storage, url);
       await deleteObject(storageRef);
-      setImages(images.filter((img) => img !== url));
+
+      const q = query(collection(firestore, "images"), where("url", "==", url));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      setImages(images.filter((img) => img.url !== url));
     } catch (error: any) {
       console.error("Error deleting image: ", error);
       Alert.alert("Delete failed!", error.message);
@@ -117,21 +160,46 @@ export default function GaleryScreen() {
           <Text style={styles.buttonText}>Pick an image from camera roll</Text>
         </TouchableOpacity>
         {image && (
-          <>
-            <Image source={{ uri: image }} style={styles.image} />
-            <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
-              <Text style={styles.buttonText}>Upload Image</Text>
-            </TouchableOpacity>
-          </>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Add Description</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter description"
+                value={description}
+                onChangeText={setDescription}
+              />
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={() => uploadImage(true)}
+              >
+                <Text style={styles.buttonText}>Add</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={() => uploadImage(false)}
+              >
+                <Text style={styles.buttonText}>Later</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
         )}
         <FlatList
           data={images}
           renderItem={({ item }) => (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: item }} style={styles.image} />
+              <Image source={{ uri: item.url }} style={styles.image} />
+              <Text style={styles.description}>{item.description}</Text>
               <TouchableOpacity
                 style={styles.deleteButton}
-                onPress={() => deleteImage(item)}
+                onPress={() => deleteImage(item.url)}
               >
                 <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>
@@ -224,5 +292,39 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    width: "100%",
+  },
+  description: {
+    fontSize: 14,
+    color: "#304121",
+    marginTop: 5,
   },
 });
