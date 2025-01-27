@@ -23,6 +23,7 @@ export default function CameraScreen() {
   const cameraRef = useRef<any>(null);
   const [user, setUser] = useState<User | null>(null);
   const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState<string>(""); // New state variable for name
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   useState(() => {
@@ -59,7 +60,7 @@ export default function CameraScreen() {
     }
   }
 
-  async function savePhoto(withDescription: boolean) {
+  async function savePhoto(withDescription: boolean, withName: boolean) {
     if (!user || !photoUri) {
       Alert.alert("No user or photo found!");
       return;
@@ -73,17 +74,17 @@ export default function CameraScreen() {
       await uploadBytes(storageRef, blob);
 
       const url = await getDownloadURL(storageRef);
-      console.log(withDescription ? "Adding description" : "No description");
       await addDoc(collection(firestore, "images"), {
         url,
         description: withDescription ? description : "",
+        name: withName ? name : "",
         userId: user.uid,
       });
 
-      console.log("Image uploaded and URL retrieved: ", url);
       Alert.alert("Success!", "Image has been saved to Firebase.");
       setPhotoUri(null); // Reset photo state after upload
       setDescription(""); // Reset description state
+      setName(""); // Reset name state
       setModalVisible(false); // Close the modal
     } catch (error: any) {
       console.error("Error saving photo: ", error);
@@ -108,7 +109,13 @@ export default function CameraScreen() {
           }}
         >
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Add Description</Text>
+            <Text style={styles.modalText}>Add Name and Description</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter name"
+              value={name}
+              onChangeText={setName}
+            />
             <TextInput
               style={styles.input}
               placeholder="Enter description"
@@ -117,13 +124,13 @@ export default function CameraScreen() {
             />
             <TouchableOpacity
               style={styles.uploadButton}
-              onPress={() => savePhoto(true)}
+              onPress={() => savePhoto(true, true)}
             >
               <Text style={styles.buttonText}>Add</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.uploadButton}
-              onPress={() => savePhoto(false)}
+              onPress={() => savePhoto(false, false)}
             >
               <Text style={styles.buttonText}>Later</Text>
             </TouchableOpacity>
@@ -135,7 +142,7 @@ export default function CameraScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => savePhoto(false)}
+            onPress={() => savePhoto(false, false)}
           >
             <Ionicons name="cloud-upload" size={30} color="white" />
           </TouchableOpacity>

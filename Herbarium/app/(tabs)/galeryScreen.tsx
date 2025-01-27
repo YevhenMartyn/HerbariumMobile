@@ -26,6 +26,8 @@ import {
   query,
   where,
   deleteDoc,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { User, onAuthStateChanged } from "firebase/auth";
@@ -36,7 +38,13 @@ export default function GaleryScreen() {
   const [images, setImages] = useState<any[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [viewModalVisible, setViewModalVisible] = useState<boolean>(false);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [selectedImageDescription, setSelectedImageDescription] =
+    useState<string>("");
+  const [selectedImageName, setSelectedImageName] = useState<string>("");
 
   useFocusEffect(
     useCallback(() => {
@@ -69,10 +77,12 @@ export default function GaleryScreen() {
           );
           const querySnapshot = await getDocs(q);
           let description = "";
+          let name = "";
           querySnapshot.forEach((doc) => {
             description = doc.data().description;
+            name = doc.data().name;
           });
-          return { url, description };
+          return { url, description, name, docId: querySnapshot.docs[0].id };
         })
       );
       setImages(urls);
@@ -96,7 +106,7 @@ export default function GaleryScreen() {
     }
   };
 
-  const uploadImage = async (withDescription: boolean) => {
+  const uploadImage = async (withDescription: boolean, withName: boolean) => {
     if (!user || !image) {
       Alert.alert("No user or image found!");
       return;
@@ -110,18 +120,25 @@ export default function GaleryScreen() {
       await uploadBytes(storageRef, blob);
 
       const url = await getDownloadURL(storageRef);
-      await addDoc(collection(firestore, "images"), {
+      const docRef = await addDoc(collection(firestore, "images"), {
         url,
         description: withDescription ? description : "",
+        name: withName ? name : "",
         userId: user.uid,
       });
 
       setImages((images) => [
         ...images,
-        { url, description: withDescription ? description : "" },
+        {
+          url,
+          description: withDescription ? description : "",
+          name: withName ? name : "",
+          docId: docRef.id,
+        },
       ]);
       setImage(null); // Reset the image state
       setDescription(""); // Reset the description state
+      setName(""); // Reset the name state
       setModalVisible(false); // Close the modal
     } catch (error: any) {
       console.error("Error uploading image: ", error);
@@ -129,7 +146,7 @@ export default function GaleryScreen() {
     }
   };
 
-  const deleteImage = async (url: any) => {
+  const deleteImage = async (url: any, docId: string) => {
     if (!user) {
       Alert.alert("No user found!");
       return;
@@ -139,16 +156,48 @@ export default function GaleryScreen() {
       const storageRef = ref(storage, url);
       await deleteObject(storageRef);
 
-      const q = query(collection(firestore, "images"), where("url", "==", url));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref);
-      });
+      await deleteDoc(doc(firestore, "images", docId));
 
       setImages(images.filter((img) => img.url !== url));
+      setViewModalVisible(false); // Close the view modal after deleting
     } catch (error: any) {
       console.error("Error deleting image: ", error);
       Alert.alert("Delete failed!", error.message);
+    }
+  };
+
+  const selectImage = (image: any) => {
+    setSelectedImage(image);
+    setSelectedImageDescription(image.description);
+    setSelectedImageName(image.name);
+    setViewModalVisible(true);
+  };
+
+  const updateDescriptionAndName = async () => {
+    if (!selectedImage) return;
+
+    try {
+      const docRef = doc(firestore, "images", selectedImage.docId);
+      await updateDoc(docRef, {
+        description: selectedImageDescription,
+        name: selectedImageName,
+      });
+
+      setImages((images) =>
+        images.map((img) =>
+          img.url === selectedImage.url
+            ? {
+                ...img,
+                description: selectedImageDescription,
+                name: selectedImageName,
+              }
+            : img
+        )
+      );
+      setViewModalVisible(false);
+    } catch (error: any) {
+      console.error("Error updating description and name: ", error);
+      Alert.alert("Update failed!", error.message);
     }
   };
 
@@ -169,7 +218,13 @@ export default function GaleryScreen() {
             }}
           >
             <View style={styles.modalView}>
-              <Text style={styles.modalText}>Add Description</Text>
+              <Text style={styles.modalText}>Add Name and Description</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter name"
+                value={name}
+                onChangeText={setName}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Enter description"
@@ -178,13 +233,13 @@ export default function GaleryScreen() {
               />
               <TouchableOpacity
                 style={styles.uploadButton}
-                onPress={() => uploadImage(true)}
+                onPress={() => uploadImage(true, true)}
               >
                 <Text style={styles.buttonText}>Add</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.uploadButton}
-                onPress={() => uploadImage(false)}
+                onPress={() => uploadImage(false, false)}
               >
                 <Text style={styles.buttonText}>Later</Text>
               </TouchableOpacity>
@@ -195,20 +250,59 @@ export default function GaleryScreen() {
           data={images}
           renderItem={({ item }) => (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: item.url }} style={styles.image} />
-              <Text style={styles.description}>{item.description}</Text>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteImage(item.url)}
-              >
-                <Text style={styles.buttonText}>Delete</Text>
+              <TouchableOpacity onPress={() => selectImage(item)}>
+                <Image source={{ uri: item.url }} style={styles.image} />
               </TouchableOpacity>
+              <Text style={styles.name}>{item.name}</Text>
             </View>
           )}
           keyExtractor={(item, index) => index.toString()}
           numColumns={2} // Display images in two columns
           columnWrapperStyle={styles.columnWrapper} // Optional: Style to add space between columns
         />
+        {selectedImage && (
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={viewModalVisible}
+            onRequestClose={() => {
+              setViewModalVisible(!viewModalVisible);
+            }}
+          >
+            <View style={styles.modalView}>
+              <Image
+                source={{ uri: selectedImage.url }}
+                style={styles.modalImage}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter name"
+                value={selectedImageName}
+                onChangeText={setSelectedImageName}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter description"
+                value={selectedImageDescription}
+                onChangeText={setSelectedImageDescription}
+              />
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={updateDescriptionAndName}
+              >
+                <Text style={styles.buttonText}>Update</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() =>
+                  deleteImage(selectedImage.url, selectedImage.docId)
+                }
+              >
+                <Text style={styles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -241,6 +335,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     width: "50%", // Ensures two columns by giving each image half the width of the container
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
   },
   columnWrapper: {
     justifyContent: "space-between", // Space out the columns
@@ -308,11 +405,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "bold",
+  modalImage: {
+    width: 300,
+    height: 300,
+    marginBottom: 20,
+    borderRadius: 10,
   },
   input: {
     height: 40,
@@ -322,8 +419,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     width: "100%",
   },
-  description: {
-    fontSize: 14,
+  name: {
+    fontSize: 16,
+    fontWeight: "bold",
     color: "#304121",
     marginTop: 5,
   },
