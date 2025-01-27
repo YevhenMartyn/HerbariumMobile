@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   registerButton: {
     width: 341,
     height: 57,
-    backgroundColor: "#304121",
+    backgroundColor: "#98B66E",
     borderRadius: 60,
     justifyContent: "center",
     alignItems: "center",
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   registerButtonText: {
-    color: "#98B66E",
+    color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 24,
     fontFamily: "NunitoSans_10pt_Expanded-Regular",
