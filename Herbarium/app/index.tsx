@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -27,6 +28,10 @@ const index = () => {
     >
       <SafeAreaView style={styles.innerContainer}>
         <View style={styles.titleContainer}>
+          <Image
+            source={require("../assets/images/logo_herbarium.png")}
+            style={styles.logo}
+          />
           <Text style={styles.titleCollect}>Collect</Text>
           <Text style={styles.titleAmpersand}>&</Text>
           <Text style={styles.titleScan}>Scan plants</Text>
@@ -65,6 +70,11 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: "center",
     marginBottom: 60,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 0,
   },
   titleCollect: {
     fontFamily: "Parkinsans-Bold",
@@ -112,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   registerButton: {
-    backgroundColor: "#304121",
+    backgroundColor: "#FFFFFF",
   },
   registerButtonText: {
     fontFamily: "NunitoSans_10pt_Expanded-Regular",

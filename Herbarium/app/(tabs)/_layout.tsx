@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
-
 export default function TabsLayout() {
   return (
     <View style={styles.container}>
@@ -13,6 +12,7 @@ export default function TabsLayout() {
           tabBarActiveTintColor: "#25292e",
           tabBarInactiveTintColor: "#98B66E",
           tabBarLabelStyle: styles.tabLabel,
+          headerShown: false,
         }}
       >
         <Tabs.Screen
