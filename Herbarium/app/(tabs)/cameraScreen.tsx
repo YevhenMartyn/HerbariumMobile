@@ -58,7 +58,6 @@ export default function CameraScreen() {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       setPhotoUri(photo.uri);
-      setModalVisible(true);
     }
   }
 
@@ -103,10 +102,34 @@ export default function CameraScreen() {
     setPhotoUri(null);
   }
 
+  function confirmSavePhoto() {
+    setModalVisible(true);
+  }
+
   if (photoUri) {
     return (
       <View style={styles.container}>
         <Image source={{ uri: photoUri }} style={styles.preview} />
+        <View style={styles.bottomPanel}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={retakePhoto}
+            disabled={loading}
+          >
+            <Ionicons name="reload-circle" size={30} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={confirmSavePhoto}
+            disabled={loading} // Disable button when loading
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="cloud-upload" size={30} color="white" />
+            )}
+          </TouchableOpacity>
+        </View>
         <Modal
           animationType="slide"
           transparent={true}
@@ -153,26 +176,6 @@ export default function CameraScreen() {
             </TouchableOpacity>
           </View>
         </Modal>
-        <View style={styles.bottomPanel}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={retakePhoto}
-            disabled={loading}
-          >
-            <Ionicons name="reload-circle" size={30} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => savePhoto(false, false)}
-            disabled={loading} // Disable button when loading
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Ionicons name="cloud-upload" size={30} color="white" />
-            )}
-          </TouchableOpacity>
-        </View>
       </View>
     );
   }
