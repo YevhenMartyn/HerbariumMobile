@@ -83,6 +83,7 @@ export default function CameraScreen() {
         description: withDescription ? description : "",
         name: withName ? name : "",
         userId: user.uid,
+        timestamp: new Date(), // Add timestamp field
       });
 
       Alert.alert("Success!", "Image has been saved to Firebase.");
