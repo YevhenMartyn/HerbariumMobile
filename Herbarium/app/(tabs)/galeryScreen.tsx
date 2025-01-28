@@ -241,7 +241,7 @@ export default function GaleryScreen() {
               setModalVisible(!modalVisible);
             }}
           >
-            <View style={styles.modalView}>
+            <View style={styles.modalView2}>
               <Text style={styles.modalText}>Add Name and Description</Text>
               <TextInput
                 style={styles.input}
@@ -267,14 +267,14 @@ export default function GaleryScreen() {
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.uploadButton}
+                style={styles.uploadButton2}
                 onPress={() => uploadImage(false, false)}
                 disabled={loading} // Disable button when loading
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.buttonText}>Later</Text>
+                  <Text style={styles.buttonText2}>Later</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -360,28 +360,34 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: 10,
     backgroundColor: "#EAFFCD",
   },
   title: {
-    fontSize: 24,
+    fontSize: 48,
     fontWeight: "bold",
     marginBottom: 20,
     color: "#304121",
   },
   image: {
-    width: 150,
+    width: 170,
     height: 150,
-    marginVertical: 10,
+    marginVertical: 0,
+    marginBottom: 10,
     borderRadius: 10,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   imageContainer: {
     alignItems: "center",
     marginVertical: 10,
-    width: "50%", // Ensures two columns by giving each image half the width of the container
+    marginHorizontal: 5,
+    width: "47%", // Ensures two columns by giving each image half the width of the container
     backgroundColor: "white",
-    padding: 10,
-    borderRadius: 10,
+    padding: 20,
+    paddingTop: 0,
+    borderRadius: 20,
+    minWidth: 170,
   },
   columnWrapper: {
     justifyContent: "space-between", // Space out the columns
@@ -402,7 +408,7 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   uploadButton: {
-    backgroundColor: "#304121",
+    backgroundColor: "#98B66E",
     borderRadius: 60,
     width: "80%",
     paddingVertical: 15,
@@ -415,11 +421,25 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginVertical: 20,
   },
+  uploadButton2: {
+    backgroundColor: "#f8fff6",
+    borderRadius: 60,
+    width: "80%",
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#304121",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 21,
+    elevation: 5,
+    marginVertical: 10,
+  },
   deleteButton: {
     backgroundColor: "#FF3B30",
-    borderRadius: 15,
+    borderRadius: 60,
     width: "80%",
-    paddingVertical: 12,
+    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#FF3B30",
@@ -434,7 +454,36 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  buttonText2: {
+    color: "#98B66E",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  modalText: {
+    color: "#000000",
+    marginBottom: 30,
+    fontSize: 18,
+    fontWeight: "600",
+  },
   modalView: {
+    marginTop: 70, // Ensure no margin at the top
+    paddingTop: 0,
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalView2: {
+    marginTop: 200,
     margin: 20,
     backgroundColor: "white",
     borderRadius: 20,
@@ -450,16 +499,19 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalImage: {
-    width: 300,
-    height: 300,
+    width: 353,
+    height: 330,
     marginBottom: 20,
     borderRadius: 10,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
+    height: 45,
+    borderWidth: 2,
+    borderColor: "#E8EAF6",
     marginBottom: 20,
+    borderRadius: 20,
     paddingHorizontal: 10,
     width: "100%",
   },
