@@ -69,7 +69,7 @@ export default function GaleryScreen() {
   }, []);
 
   const fetchImages = async (userId: any) => {
-    setLoading(true);
+    setLoading(true); // Start loading
     try {
       const storageRef = ref(storage, `images/${userId}`);
       const result = await listAll(storageRef);
@@ -98,6 +98,8 @@ export default function GaleryScreen() {
           };
         })
       );
+      // Sort images by timestamp in descending order (newest first)
+      urls.sort((a, b) => b.timestamp - a.timestamp);
       setImages(urls);
     } catch (error) {
       console.error("Error fetching images: ", error);
@@ -146,7 +148,6 @@ export default function GaleryScreen() {
       });
 
       setImages((images) => [
-        ...images,
         {
           url,
           description: withDescription ? description : "",
@@ -154,6 +155,7 @@ export default function GaleryScreen() {
           timestamp: new Date(),
           docId: docRef.id,
         },
+        ...images,
       ]);
       setImage(null); // Reset the image state
       setDescription(""); // Reset the description state
