@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -6,16 +6,29 @@ import {
   StyleSheet,
   SafeAreaView,
   Animated,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { auth } from "../../FirebaseConfig";
+import { auth, firestore } from "../../FirebaseConfig";
 import { router } from "expo-router";
 import { getAuth } from "firebase/auth";
 import { UserCircle2, LogOut } from "lucide-react-native";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 
 export default function HomePage() {
   const [showSignOut, setShowSignOut] = useState(false);
+  const [latestImage, setLatestImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const [user, setUser] = useState(getAuth().currentUser);
 
   const toggleSignOutButton = () => {
     setShowSignOut(!showSignOut);
@@ -23,21 +36,67 @@ export default function HomePage() {
 
   const handleSignOut = () => {
     auth.signOut();
-    router.replace("../sign-in.tsx");
+    router.replace("/sign-in"); // Ensure the correct path to the login page
   };
 
-  React.useEffect(() => {
+  const fetchLatestImage = () => {
+    if (!user) return;
+
+    try {
+      const q = query(
+        collection(firestore, "images"),
+        where("userId", "==", user.uid),
+        orderBy("timestamp", "desc"),
+        limit(1)
+      );
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        if (!querySnapshot.empty) {
+          const latestImageDoc = querySnapshot.docs[0];
+          setLatestImage(latestImageDoc.data().url);
+        } else {
+          setLatestImage(null);
+        }
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error fetching latest image: ", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let unsubscribe;
+    if (user) {
+      unsubscribe = fetchLatestImage();
+    }
+    return () => {
+      if (unsubscribe && typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const authUnsubscribe = getAuth().onAuthStateChanged((currentUser) => {
+      if (!currentUser) {
+        router.replace("/sign-in"); // Ensure the correct path to the login page
+      } else {
+        setUser(currentUser);
+      }
+    });
+
+    return () => authUnsubscribe();
+  }, []);
+
+  useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: showSignOut ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
   }, [showSignOut]);
-
-  // Redirect to login if not authenticated
-  getAuth().onAuthStateChanged((user) => {
-    if (!user) router.replace("../index.tsx");
-  });
 
   return (
     <LinearGradient
@@ -69,6 +128,13 @@ export default function HomePage() {
         </View>
         <View style={styles.content}>
           <Text style={styles.welcomeText}>Welcome!</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#304121" />
+          ) : latestImage ? (
+            <Image source={{ uri: latestImage }} style={styles.latestImage} />
+          ) : (
+            <Text style={styles.noImageText}>No images available</Text>
+          )}
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -122,5 +188,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#304121",
     textAlign: "center",
+  },
+  latestImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  noImageText: {
+    fontSize: 18,
+    color: "#304121",
+    marginTop: 20,
   },
 });

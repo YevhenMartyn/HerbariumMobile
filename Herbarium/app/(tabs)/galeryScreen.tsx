@@ -29,6 +29,7 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  orderBy,
 } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { User, onAuthStateChanged } from "firebase/auth";
@@ -80,11 +81,19 @@ export default function GaleryScreen() {
           const querySnapshot = await getDocs(q);
           let description = "";
           let name = "";
+          let timestamp = null;
           querySnapshot.forEach((doc) => {
             description = doc.data().description;
             name = doc.data().name;
+            timestamp = doc.data().timestamp;
           });
-          return { url, description, name, docId: querySnapshot.docs[0].id };
+          return {
+            url,
+            description,
+            name,
+            timestamp,
+            docId: querySnapshot.docs[0].id,
+          };
         })
       );
       setImages(urls);
@@ -129,6 +138,7 @@ export default function GaleryScreen() {
         description: withDescription ? description : "",
         name: withName ? name : "",
         userId: user.uid,
+        timestamp: new Date(), // Add timestamp field
       });
 
       setImages((images) => [
@@ -137,6 +147,7 @@ export default function GaleryScreen() {
           url,
           description: withDescription ? description : "",
           name: withName ? name : "",
+          timestamp: new Date(),
           docId: docRef.id,
         },
       ]);
