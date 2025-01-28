@@ -68,6 +68,7 @@ export default function GaleryScreen() {
   }, []);
 
   const fetchImages = async (userId: any) => {
+    setLoading(true);
     try {
       const storageRef = ref(storage, `images/${userId}`);
       const result = await listAll(storageRef);
@@ -99,6 +100,8 @@ export default function GaleryScreen() {
       setImages(urls);
     } catch (error) {
       console.error("Error fetching images: ", error);
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
