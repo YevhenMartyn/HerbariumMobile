@@ -9,6 +9,7 @@ import {
   View,
   TextInput,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { storage, auth, firestore } from "../../FirebaseConfig";
@@ -45,6 +46,7 @@ export default function GaleryScreen() {
   const [selectedImageDescription, setSelectedImageDescription] =
     useState<string>("");
   const [selectedImageName, setSelectedImageName] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false); // New loading state
 
   useFocusEffect(
     useCallback(() => {
@@ -112,6 +114,8 @@ export default function GaleryScreen() {
       return;
     }
 
+    setLoading(true); // Start loading
+
     try {
       const response = await fetch(image);
       const blob = await response.blob();
@@ -143,6 +147,8 @@ export default function GaleryScreen() {
     } catch (error: any) {
       console.error("Error uploading image: ", error);
       Alert.alert("Upload failed!", error.message);
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -151,6 +157,8 @@ export default function GaleryScreen() {
       Alert.alert("No user found!");
       return;
     }
+
+    setLoading(true); // Start loading
 
     try {
       const storageRef = ref(storage, url);
@@ -163,6 +171,8 @@ export default function GaleryScreen() {
     } catch (error: any) {
       console.error("Error deleting image: ", error);
       Alert.alert("Delete failed!", error.message);
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -175,6 +185,8 @@ export default function GaleryScreen() {
 
   const updateDescriptionAndName = async () => {
     if (!selectedImage) return;
+
+    setLoading(true); // Start loading
 
     try {
       const docRef = doc(firestore, "images", selectedImage.docId);
@@ -198,6 +210,8 @@ export default function GaleryScreen() {
     } catch (error: any) {
       console.error("Error updating description and name: ", error);
       Alert.alert("Update failed!", error.message);
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -205,8 +219,18 @@ export default function GaleryScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.title}>Gallery</Text>
-        <TouchableOpacity style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick an image from camera roll</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={pickImage}
+          disabled={loading} // Disable button when loading
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.buttonText}>
+              Pick an image from camera roll
+            </Text>
+          )}
         </TouchableOpacity>
         {image && (
           <Modal
@@ -234,14 +258,24 @@ export default function GaleryScreen() {
               <TouchableOpacity
                 style={styles.uploadButton}
                 onPress={() => uploadImage(true, true)}
+                disabled={loading} // Disable button when loading
               >
-                <Text style={styles.buttonText}>Add</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Add</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.uploadButton}
                 onPress={() => uploadImage(false, false)}
+                disabled={loading} // Disable button when loading
               >
-                <Text style={styles.buttonText}>Later</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Later</Text>
+                )}
               </TouchableOpacity>
             </View>
           </Modal>
@@ -289,16 +323,26 @@ export default function GaleryScreen() {
               <TouchableOpacity
                 style={styles.uploadButton}
                 onPress={updateDescriptionAndName}
+                disabled={loading} // Disable button when loading
               >
-                <Text style={styles.buttonText}>Update</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Update</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() =>
                   deleteImage(selectedImage.url, selectedImage.docId)
                 }
+                disabled={loading} // Disable button when loading
               >
-                <Text style={styles.buttonText}>Delete</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}>Delete</Text>
+                )}
               </TouchableOpacity>
             </View>
           </Modal>

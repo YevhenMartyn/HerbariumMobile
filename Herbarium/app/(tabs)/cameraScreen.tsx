@@ -1,5 +1,5 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Modal,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { storage, auth, firestore } from "../../FirebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -25,13 +26,14 @@ export default function CameraScreen() {
   const [description, setDescription] = useState<string>("");
   const [name, setName] = useState<string>(""); // New state variable for name
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false); // New loading state
 
-  useState(() => {
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
     return unsubscribe;
-  });
+  }, []);
 
   if (!permission) {
     return <View />;
@@ -66,6 +68,8 @@ export default function CameraScreen() {
       return;
     }
 
+    setLoading(true); // Start loading
+
     try {
       const response = await fetch(photoUri);
       const blob = await response.blob();
@@ -89,6 +93,8 @@ export default function CameraScreen() {
     } catch (error: any) {
       console.error("Error saving photo: ", error);
       Alert.alert("Upload failed!", error.message);
+    } finally {
+      setLoading(false); // End loading
     }
   }
 
@@ -125,26 +131,45 @@ export default function CameraScreen() {
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={() => savePhoto(true, true)}
+              disabled={loading} // Disable button when loading
             >
-              <Text style={styles.buttonText}>Add</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Add</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={() => savePhoto(false, false)}
+              disabled={loading} // Disable button when loading
             >
-              <Text style={styles.buttonText}>Later</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Later</Text>
+              )}
             </TouchableOpacity>
           </View>
         </Modal>
         <View style={styles.bottomPanel}>
-          <TouchableOpacity style={styles.button} onPress={retakePhoto}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={retakePhoto}
+            disabled={loading}
+          >
             <Ionicons name="reload-circle" size={30} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={() => savePhoto(false, false)}
+            disabled={loading} // Disable button when loading
           >
-            <Ionicons name="cloud-upload" size={30} color="white" />
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="cloud-upload" size={30} color="white" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -155,10 +180,18 @@ export default function CameraScreen() {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
         <View style={styles.bottomPanel}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={toggleCameraFacing}
+            disabled={loading}
+          >
             <Ionicons name="camera-reverse" size={30} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePhoto}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={takePhoto}
+            disabled={loading}
+          >
             <Ionicons name="camera" size={30} color="white" />
           </TouchableOpacity>
         </View>
