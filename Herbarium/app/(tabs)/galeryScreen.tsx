@@ -242,7 +242,7 @@ export default function GaleryScreen() {
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <MaterialIcons name="upload-file" size={24} color="black" />
+            <MaterialIcons name="upload-file" size={24} color="white" />
           )}
         </TouchableOpacity>
         {image && (
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
     marginBottom: 10,
-    width: "80%",
+    width: "93%",
   },
   uploadButton: {
     backgroundColor: "#98B66E",

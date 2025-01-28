@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     shadowColor: "#304121",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 21,
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
     elevation: 5,
   },
   signInButton: {
