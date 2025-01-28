@@ -31,6 +31,7 @@ import {
   doc,
   orderBy,
 } from "firebase/firestore";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { useFocusEffect } from "expo-router";
@@ -243,9 +244,7 @@ export default function GaleryScreen() {
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Text style={styles.buttonText}>
-              Pick an image from camera roll
-            </Text>
+            <MaterialIcons name="upload-file" size={24} color="black" />
           )}
         </TouchableOpacity>
         {image && (
