@@ -127,7 +127,7 @@ export default function HomePage() {
           )}
         </View>
         <View style={styles.content}>
-          <Text style={styles.welcomeText}>Welcome!</Text>
+          <Text style={styles.welcomeText}>Recent Photo</Text>
           {loading ? (
             <ActivityIndicator size="large" color="#304121" />
           ) : latestImage ? (
